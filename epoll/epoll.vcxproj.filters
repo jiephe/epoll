@@ -1,0 +1,78 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source files">
+      <UniqueIdentifier>{678e92a3-f89c-403a-b1d4-286768f063f1}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header files">
+      <UniqueIdentifier>{96b65458-0a30-4390-9663-6f9ce26c43d6}</UniqueIdentifier>
+      <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="Resource files">
+      <UniqueIdentifier>{fd0ba264-d48b-488f-bed0-09d0f2758314}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav</Extensions>
+    </Filter>
+    <Filter Include="VisualGDB settings">
+      <UniqueIdentifier>{1c088ece-aa58-4ea0-903d-28fcd79964e0}</UniqueIdentifier>
+      <Extensions>vgdbsettings</Extensions>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="epoll-Debug.vgdbsettings">
+      <Filter>VisualGDB settings</Filter>
+    </None>
+    <None Include="epoll-Release.vgdbsettings">
+      <Filter>VisualGDB settings</Filter>
+    </None>
+    <None Include="Makefile">
+      <Filter>Source files</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="epoll.cpp">
+      <Filter>Source files</Filter>
+    </ClCompile>
+    <ClCompile Include="loop.cpp">
+      <Filter>Source files</Filter>
+    </ClCompile>
+    <ClCompile Include="connection.cpp">
+      <Filter>Source files</Filter>
+    </ClCompile>
+    <ClCompile Include="acceptor.cpp">
+      <Filter>Source files</Filter>
+    </ClCompile>
+    <ClCompile Include="runtime.cpp">
+      <Filter>Source files</Filter>
+    </ClCompile>
+    <ClCompile Include="tcp_server.cpp">
+      <Filter>Source files</Filter>
+    </ClCompile>
+    <ClCompile Include="channel.cpp">
+      <Filter>Source files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="loop.h">
+      <Filter>Source files</Filter>
+    </ClInclude>
+    <ClInclude Include="connection.h">
+      <Filter>Source files</Filter>
+    </ClInclude>
+    <ClInclude Include="acceptor.h">
+      <Filter>Source files</Filter>
+    </ClInclude>
+    <ClInclude Include="runtime.h">
+      <Filter>Source files</Filter>
+    </ClInclude>
+    <ClInclude Include="tcp_server.h">
+      <Filter>Source files</Filter>
+    </ClInclude>
+    <ClInclude Include="internal.h">
+      <Filter>Source files</Filter>
+    </ClInclude>
+    <ClInclude Include="channel.h">
+      <Filter>Source files</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>
