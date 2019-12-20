@@ -24,10 +24,10 @@ public:
 	void OnError(int sockfd);
 			
 private:	
-	std::map<int, connectionPtr>			connections_;	
-	CLoop*									loop_;
 	CRuntime*								runtime_;
+	CLoop*									loop_;
 	ConnectionCallback						new_conn_cb_;
 	MessageCallback							msg_cb_;
 	acceptorPtr								accept_;
+	std::map<int, connectionPtr>			connections_;	
 };

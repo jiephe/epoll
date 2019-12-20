@@ -1,6 +1,6 @@
 CFLAGS  += -std=c99 -Wall -O2 
 CXXFLAGS += -std=c++11 -Wall -O2 
-LIBS    := -Wl,-Bstatic -lssl -lcrypto -lmysqlcppconn-static  -Wl,-Bdynamic -lstdc++ -lpthread
+LIBS    := -Wl,-Bstatic -lssl -lcrypto -Wl,-Bdynamic -lstdc++ -lpthread
 
 TARGET  := $(shell uname -s | tr '[A-Z]' '[a-z]' 2>/dev/null || echo unknown)
 
@@ -14,7 +14,7 @@ SRC1 :=
 OBJ := $(patsubst %.c,$(ODIR)/%.o,$(SRC1))
 SRC += $(SRC1)
 
-SRC2 := epoll.cpp 
+SRC2 := $(wildcard *.cpp) 
 OBJ += $(patsubst %.cpp,$(ODIR)/%.o,$(SRC2))
 SRC += $(SRC2) 
 

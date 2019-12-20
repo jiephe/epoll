@@ -60,7 +60,7 @@ void CLoop::start()
 		}
 		else if (nevent > 0)
 		{
-			if (nevent == events_.size())
+			if ((size_t)nevent == events_.size())
 				events_.resize(nevent * 2);
 			
 			for (int i = 0; i < nevent; ++i)

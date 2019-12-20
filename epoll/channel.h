@@ -23,9 +23,9 @@ public:
 	void set_error_cb(const EventCallback& cb) { error_cb_ = cb; }
 	
 private:
-	int						fd_;
-	
 	CLoop*					loop_;
+	
+	int						fd_;
 		
 	EventCallback			read_cb_;
 		

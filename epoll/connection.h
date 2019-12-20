@@ -28,11 +28,11 @@ public:
 	void OnError();
 	
 private:
+	CLoop*					loop_;
+	
 	int						fd_;
 	
 	Channel*				channel_;
-	
-	CLoop*					loop_;
 	
 	std::vector<char>		in_buf_;
 	

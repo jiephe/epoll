@@ -22,6 +22,6 @@ public:
 private:
 	std::vector<CLoop*>							loops_;
 	std::vector<std::shared_ptr<std::thread>>	threads_;
-	int											next_;		
+	uint32_t									next_;		
 	CLoop*										base_loop_;
 };
