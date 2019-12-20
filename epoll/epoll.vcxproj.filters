@@ -51,6 +51,9 @@
     <ClCompile Include="channel.cpp">
       <Filter>Source files</Filter>
     </ClCompile>
+    <ClCompile Include="loop_manager.cpp">
+      <Filter>Source files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="loop.h">
@@ -72,6 +75,9 @@
       <Filter>Source files</Filter>
     </ClInclude>
     <ClInclude Include="channel.h">
+      <Filter>Source files</Filter>
+    </ClInclude>
+    <ClInclude Include="loop_manager.h">
       <Filter>Source files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -9,21 +9,24 @@ public:
 	Connection(CLoop* loop, int fd);
 	~Connection();
 	
+	void destroyConnection();
+	
 	void start();
 	
-	void set_data_callback(const MessageCallback& cb)
-	{
-		msg_cb_ = cb;
-	}
-	void set_error_callback(const ErrorCallback& cb)
-	{
-		error_cb_ = cb;
-	}
+	void set_data_callback(const MessageCallback& cb) { msg_cb_ = cb; }
+	
+	void set_close_callback(const CloseCallback& cb);
+
+	int get_fd();
+	
+	CLoop* get_loop();
 	
 public:
 	void OnRead();
 	
 	void OnWrite();
+	
+	void OnClose();
 	
 	void OnError();
 	
@@ -38,5 +41,5 @@ private:
 	
 	MessageCallback			msg_cb_;
 	
-	ErrorCallback			error_cb_;
+	CloseCallback			close_cb_;
 };

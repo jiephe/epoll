@@ -2,12 +2,11 @@
 
 #include <map>
 #include "internal.h"
-#include "acceptor.h"
 
 class CTcpServer
 {
 public:
-	CTcpServer(CRuntime* runtime, CLoop* loop, const std::string& port);
+	CTcpServer(CRuntime* runtime, CLoop* loop, const std::string& port, int threadnum);
 	
 	~CTcpServer();
 	
@@ -21,11 +20,14 @@ public:
 	
 	void OnData(const connectionPtr& conn, void* data, int len);
 	
-	void OnError(int sockfd);
+	void OnClose(const connectionPtr& conn);
+		
+	void removeConnection(const connectionPtr& conn);
 			
 private:	
 	CRuntime*								runtime_;
 	CLoop*									loop_;
+	loopManagerPtr							loop_manager_;
 	ConnectionCallback						new_conn_cb_;
 	MessageCallback							msg_cb_;
 	acceptorPtr								accept_;

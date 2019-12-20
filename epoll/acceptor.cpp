@@ -35,8 +35,8 @@ bool CAcceptor::start()
 	}
 	
 	accept_channel_ = new Channel(loop_, fd_);
-	accept_channel_->start();
 	accept_channel_->set_read_cb(std::bind(&CAcceptor::accept_connection, this));
+	accept_channel_->start();
 	return true;
 }
 

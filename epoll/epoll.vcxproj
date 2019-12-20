@@ -79,6 +79,7 @@
     <ClCompile Include="connection.cpp" />
     <ClCompile Include="epoll.cpp" />
     <ClCompile Include="loop.cpp" />
+    <ClCompile Include="loop_manager.cpp" />
     <ClCompile Include="runtime.cpp" />
     <ClCompile Include="tcp_server.cpp" />
   </ItemGroup>
@@ -88,6 +89,7 @@
     <ClInclude Include="connection.h" />
     <ClInclude Include="internal.h" />
     <ClInclude Include="loop.h" />
+    <ClInclude Include="loop_manager.h" />
     <ClInclude Include="runtime.h" />
     <ClInclude Include="tcp_server.h" />
   </ItemGroup>
