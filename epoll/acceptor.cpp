@@ -9,6 +9,7 @@
 #include <cstring>
 #include <assert.h>
 #include "channel.h"
+#include "err_string.h"
 
 CAcceptor::CAcceptor(CLoop* loop, const std::string& port)
 	: loop_(loop)
@@ -30,7 +31,7 @@ bool CAcceptor::start()
 
 	if (listen(fd_, SOMAXCONN) == -1)
 	{
-		std::cerr << "[E] listen failed\n";
+		std::cerr << "listen failed errno : " << errno << "errstring: " << strerror_tl(errno) << std::endl;
 		return false;
 	}
 	
@@ -51,7 +52,7 @@ void CAcceptor::accept_connection()
 			return;
 		else
 		{
-			std::cerr << "[E] accept failed\n";
+			std::cerr << "accept failed errno : " << errno << "errstring: " << strerror_tl(errno) << std::endl;
 			return;
 		}
 	}
@@ -71,7 +72,7 @@ void CAcceptor::accept_connection()
 
 	if (!make_socket_nonblocking(infd))
 	{
-		std::cerr << "[E] make_socket_nonblocking failed\n";
+		std::cerr <<"make_socket_nonblocking failed" << std::endl;
 		return;
 	}
 	
@@ -91,7 +92,7 @@ int CAcceptor::create_and_bind(std::string const& port)
 	int sockt = getaddrinfo(nullptr, port.c_str(), &hints, &result);
 	if (sockt != 0)
 	{
-		std::cerr << "[E] getaddrinfo failed\n";
+		std::cerr << "getaddrinfo failed errno : " << errno << "errstring: " << strerror_tl(errno) << std::endl;
 		return -1;
 	}
 
@@ -106,13 +107,15 @@ int CAcceptor::create_and_bind(std::string const& port)
 		sockt = bind(socketfd, rp->ai_addr, rp->ai_addrlen);
 		if (sockt == 0)
 			break;
-
+		else if (sockt < 0)
+			std::cerr << "bind failed errno : " << errno << "errstring: " << strerror_tl(errno) << std::endl;
+			
 		close(socketfd);
 	}
 
 	if (rp == nullptr)
 	{
-		std::cerr << "[E] bind failed\n";
+		std::cerr << "bind failed" << std::endl;
 		return -1;
 	}
 
@@ -125,7 +128,7 @@ bool CAcceptor::make_socket_nonblocking(int socketfd)
 	int flags = fcntl(socketfd, F_GETFL, 0);
 	if (flags == -1)
 	{
-		std::cerr << "[E] fcntl failed (F_GETFL)\n";
+		std::cerr << "fcntl failed(F_GETFL) errno : " << errno << "errstring: " << strerror_tl(errno) << std::endl;
 		return false;
 	}
 
@@ -133,7 +136,7 @@ bool CAcceptor::make_socket_nonblocking(int socketfd)
 	int s = fcntl(socketfd, F_SETFL, flags);
 	if (s == -1)
 	{
-		std::cerr << "[E] fcntl failed (F_SETFL)\n";
+		std::cerr << "fcntl failed(F_SETFL) errno : " << errno << "errstring: " << strerror_tl(errno) << std::endl;
 		return false;
 	}
 	

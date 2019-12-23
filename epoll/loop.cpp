@@ -6,6 +6,7 @@
 #include <fcntl.h>
 #include <iostream>
 #include "channel.h"
+#include "err_string.h"
 
 CLoop::CLoop()
 {
@@ -19,37 +20,29 @@ CLoop::~CLoop()
 	::close(epollfd_);
 }
 
-void CLoop::add_read_event(int fd, Channel* channel)
+void CLoop::add_event(int fd, Channel* channel)
 {
 	struct epoll_event ev;
 	ev.data.ptr = channel;
-	ev.events = EPOLLIN | EPOLLPRI;
+	ev.events = channel->get_events();
 	if (epoll_ctl(epollfd_, EPOLL_CTL_ADD, fd, &ev) < 0)
-		std::cerr << "epoll_ctl add read fd: " << fd << " error: " << errno << std::endl;
+		std::cerr << "epoll_ctl add errno : " << errno << "errstring: " << strerror_tl(errno) << std::endl;
 }
-void CLoop::delete_read_event(int fd, Channel* channel)
+void CLoop::delete_event(int fd, Channel* channel)
 {
 	struct epoll_event ev;
 	ev.data.ptr = channel;
-	ev.events = EPOLLIN | EPOLLPRI;
+	ev.events = channel->get_events();
 	if (epoll_ctl(epollfd_, EPOLL_CTL_DEL, fd, &ev) < 0)
-		std::cerr << "epoll_ctl del read fd: " << fd << " error: " << errno << std::endl;
+		std::cerr << "epoll_ctl del errno : " << errno << "errstring: " << strerror_tl(errno) << std::endl;
 }
-void CLoop::add_write_event(int fd, Channel* channel)
+void CLoop::modify_event(int fd, Channel* channel)
 {
 	struct epoll_event ev;
 	ev.data.ptr = channel;
-	ev.events = EPOLLOUT;
-	if (epoll_ctl(epollfd_, EPOLL_CTL_ADD, fd, &ev) < 0)
-		std::cerr << "epoll_ctl add write fd: " << fd << "error: " << errno << std::endl;
-}
-void CLoop::delete_write_event(int fd, Channel* channel)
-{
-	struct epoll_event ev;
-	ev.data.ptr = channel;
-	ev.events = EPOLLOUT;
-	if (epoll_ctl(epollfd_, EPOLL_CTL_DEL, fd, &ev) < 0)
-		std::cerr << "epoll_ctl del write fd: " << fd << "error: " << errno << std::endl;
+	ev.events = channel->get_events();
+	if (epoll_ctl(epollfd_, EPOLL_CTL_MOD, fd, &ev) < 0)
+		std::cerr << "epoll_ctl mod errno : " << errno << "errstring: " << strerror_tl(errno) << std::endl;
 }
 
 bool CLoop::is_self_loop()
@@ -81,7 +74,7 @@ void CLoop::wakeup()
 	uint64_t one = 1;
 	ssize_t n = write(wakeupFd_, &one, sizeof one);
 	if (n != sizeof one)
-		std::cout << "EventLoop::wakeup() writes " << n << " bytes instead of 8" << std::endl;
+		std::cout << "EventLoop::wakeup() writes " << n << " bytes instead of 8" << std::endl;	
 }
 
 void CLoop::OnWakeRead()
@@ -96,14 +89,14 @@ void CLoop::init()
 {
 	epollfd_ = epoll_create1(EPOLL_CLOEXEC);
 	if (epollfd_ == -1)
-		std::cerr << "epoll_create1 failed\n";
+		std::cerr << "epoll_create1 failed errno : " << errno << "errstring: " << strerror_tl(errno) << std::endl;
 	
 	events_.resize(16);
 	
 	wakeupFd_ = eventfd(0, EFD_NONBLOCK | EFD_CLOEXEC);
 	if (wakeupFd_ < 0)
 	{
-		std::cout << "Failed in eventfd" << std::endl;
+		std::cerr << "Failed in eventfd errno : " << errno << "errstring: " << strerror_tl(errno) << std::endl;
 		abort();
 	}
 	

@@ -1,22 +1,42 @@
 #include "channel.h"
 #include "loop.h"
 #include <iostream>
+#include <sys/epoll.h>
 
 Channel::Channel(CLoop* loop, int fd)
 	: loop_(loop), fd_(fd)
+	, revents_(0)
 {}
 
 void Channel::start()
 {
-	loop_->add_read_event(fd_, this);
+	revents_ |= (EPOLLIN | EPOLLPRI);
+	loop_->add_event(fd_, this);
 }
 
 Channel::~Channel()
 {}
 
+void Channel::disableWrite()
+{
+	revents_ &= ~EPOLLOUT;
+	loop_->modify_event(fd_, this);
+}
+	
+void Channel::enableWrite()
+{
+	revents_ |= EPOLLOUT;
+	loop_->modify_event(fd_, this);
+}
+
+bool Channel::isWriting()
+{
+	return (revents_ & EPOLLOUT);
+}
+
 void Channel::removeAllEvent()
 {
-	loop_->delete_read_event(fd_, this);
+	loop_->delete_event(fd_, this);
 }
 
 void Channel::handle_read()

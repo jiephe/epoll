@@ -5,14 +5,7 @@
 #include <iostream>
 #include <assert.h>
 #include "channel.h"
-
-#include <errno.h>
-#include <string.h>
-__thread char t_errnobuf[512];
-const char* strerror_tl(int savedErrno)
-{
-	return strerror_r(savedErrno, t_errnobuf, sizeof t_errnobuf);
-}
+#include "err_string.h"
 
 Connection::Connection(CLoop* loop, int fd)
 	: loop_(loop), fd_(fd)
@@ -49,6 +42,67 @@ void Connection::start()
 	channel_->start();
 }
 
+int Connection::send(void* data, int len)
+{
+	int nwrote = 0;
+	int remain = len;
+	bool faultError = false;
+	if (!channel_->isWriting() && out_buf_.empty())
+	{
+		nwrote = write(fd_, data, len);
+		if (nwrote >= 0)
+		{
+			remain = len - nwrote; 
+			if (remain == 0)
+				complete_cb_(shared_from_this());
+		}
+		else
+		{
+			if (errno != EWOULDBLOCK)
+			{
+				std::cout << "send error : " << errno << std::endl;
+				if (errno == EPIPE || errno == ECONNRESET) 
+				{
+					faultError = true;
+				}
+			}
+		}
+	}
+	
+	if (!faultError && remain > 0)
+	{
+		out_buf_.insert(out_buf_.end(), (char*)data + nwrote, (char*)data + len);
+		channel_->enableWrite();
+	}
+	
+	return 0;
+}
+
+void Connection::OnWrite()
+{
+	if (channel_->isWriting())
+	{
+		int nwrote = write(fd_, &out_buf_[0], out_buf_.size());
+		if (nwrote > 0)
+		{
+			if (nwrote == out_buf_.size())
+			{
+				channel_->disableWrite();
+				out_buf_.clear();
+				complete_cb_(shared_from_this());
+			}
+			else
+			{
+				std::vector<char> tmp;
+				tmp.insert(tmp.end(), &out_buf_[0] + nwrote, &out_buf_[0] + out_buf_.size());
+				out_buf_.swap(tmp);
+			}
+		}
+		else
+			std::cout << "OnWrite error : " << errno << std::endl;
+	}
+}
+
 void Connection::OnRead()
 {	
 	std::vector<char> tmp_buf;
@@ -82,10 +136,6 @@ void Connection::OnRead()
 	}
 }
 	
-void Connection::OnWrite()
-{
-}
-
 void Connection::set_close_callback(const CloseCallback& cb)
 {
 	close_cb_ = cb;
@@ -114,5 +164,5 @@ int getSocketError(int sockfd)
 void Connection::OnError()
 {
 	int err = getSocketError(fd_);
-	std::cout << "TcpConnection::handleError [" << fd_ << "] - SO_ERROR = " << err << " " << strerror_tl(err);
+	std::cout << "handleError fd: " << fd_ << " errno = " << err << " errstring: " << strerror_tl(err);
 }

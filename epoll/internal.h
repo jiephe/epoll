@@ -20,5 +20,6 @@ typedef std::function<void(int fd)> NewConnectionCallback;
 typedef std::function<void(const connectionPtr&)> ConnectionCallback;
 typedef std::function<void(const connectionPtr&, void* data, int len)> MessageCallback;
 typedef std::function<void(const connectionPtr&)> CloseCallback;
+typedef std::function<void(const connectionPtr&)> WriteCompleteCallback;
 typedef std::function<void()> Functor;
 typedef std::function<void()> EventCallback;

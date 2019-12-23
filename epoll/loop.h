@@ -27,13 +27,11 @@ public:
 	
 	void doPendingFunctors();
 		
-	void add_read_event(int fd, Channel* channel);
+	void add_event(int fd, Channel* channel);
 	
-	void delete_read_event(int fd, Channel* channel);
+	void delete_event(int fd, Channel* channel);
 	
-	void add_write_event(int fd, Channel* channel);
-	
-	void delete_write_event(int fd, Channel* channel);
+	void modify_event(int fd, Channel* channel);
 	
 public:
 	void OnWakeRead();

@@ -10,6 +10,14 @@ public:
 	
 	void start();
 	
+	void disableWrite();
+	
+	void enableWrite();
+	
+	bool isWriting();
+	
+	int get_events() { return revents_;}
+	
 public:
 	void removeAllEvent();
 	
@@ -27,12 +35,14 @@ public:
 	void set_close_cb(const EventCallback& cb) { close_cb_ = cb; }
 	
 	void set_error_cb(const EventCallback& cb) { error_cb_ = cb; }
-	
+		
 private:
 	CLoop*					loop_;
 	
 	int						fd_;
-		
+	
+	int						revents_;
+	
 	EventCallback			read_cb_;
 		
 	EventCallback			write_cb_;
