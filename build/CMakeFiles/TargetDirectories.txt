@@ -1,0 +1,3 @@
+/home/alex/code/epoll/build/CMakeFiles/rebuild_cache.dir
+/home/alex/code/epoll/build/CMakeFiles/EPoll.dir
+/home/alex/code/epoll/build/CMakeFiles/edit_cache.dir

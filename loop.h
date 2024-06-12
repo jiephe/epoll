@@ -5,6 +5,7 @@
 #include <thread>
 #include <mutex>
 #include "internal.h"
+#include "common.h"
 
 class CLoop
 {
@@ -47,7 +48,7 @@ private:
 	
 	std::vector<struct epoll_event>		events_;
 	
-	std::thread::id						current_thead_id_;
+	pid_t								current_thead_id_;
 	
 	std::vector<Functor>				pendingFunctors_;
 	

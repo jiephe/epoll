@@ -17,8 +17,7 @@ CAcceptor::CAcceptor(CLoop* loop, const std::string& port)
 {}
 
 CAcceptor::~CAcceptor()
-{
-}
+{}
 
 bool CAcceptor::start()
 {
@@ -29,8 +28,7 @@ bool CAcceptor::start()
 	if (!make_socket_nonblocking(fd_))
 		return false;
 
-	if (listen(fd_, SOMAXCONN) == -1)
-	{
+	if (listen(fd_, SOMAXCONN) == -1) {
 		std::cerr << "listen failed errno : " << errno << "errstring: " << strerror_tl(errno) << std::endl;
 		return false;
 	}
@@ -46,12 +44,10 @@ void CAcceptor::accept_connection()
 	struct sockaddr in_addr;
 	socklen_t in_len = sizeof(in_addr);
 	int infd = accept(fd_, &in_addr, &in_len);
-	if (infd == -1)
-	{
-		if (errno == EAGAIN || errno == EWOULDBLOCK) // Done processing incoming connections
+	if (infd == -1) {
+		if (errno == EAGAIN || errno == EWOULDBLOCK) {	// Done processing incoming connections 
 			return;
-		else
-		{
+		} else {
 			std::cerr << "accept failed errno : " << errno << "errstring: " << strerror_tl(errno) << std::endl;
 			return;
 		}
@@ -65,13 +61,11 @@ void CAcceptor::accept_connection()
 		hbuf.size(),
 		const_cast<char*>(sbuf.data()),
 		sbuf.size(),
-		NI_NUMERICHOST | NI_NUMERICSERV) == 0)
-	{
+		NI_NUMERICHOST | NI_NUMERICSERV) == 0) {
 		//std::cout << "[I] Accepted connection on descriptor " << infd << "(host=" << hbuf << ", port=" << sbuf << ")" << "\n";
 	}
 
-	if (!make_socket_nonblocking(infd))
-	{
+	if (!make_socket_nonblocking(infd)) {
 		std::cerr <<"make_socket_nonblocking failed" << std::endl;
 		return;
 	}
@@ -90,16 +84,14 @@ int CAcceptor::create_and_bind(std::string const& port)
 
 	struct addrinfo* result;
 	int sockt = getaddrinfo(nullptr, port.c_str(), &hints, &result);
-	if (sockt != 0)
-	{
+	if (sockt != 0) {
 		std::cerr << "getaddrinfo failed errno : " << errno << "errstring: " << strerror_tl(errno) << std::endl;
 		return -1;
 	}
 
 	struct addrinfo* rp;
 	int socketfd;
-	for (rp = result; rp != nullptr; rp = rp->ai_next)
-	{
+	for (rp = result; rp != nullptr; rp = rp->ai_next) {
 		socketfd = socket(rp->ai_family, rp->ai_socktype, rp->ai_protocol);
 		if (socketfd == -1)
 			continue;
@@ -113,8 +105,7 @@ int CAcceptor::create_and_bind(std::string const& port)
 		close(socketfd);
 	}
 
-	if (rp == nullptr)
-	{
+	if (rp == nullptr) {
 		std::cerr << "bind failed" << std::endl;
 		return -1;
 	}
@@ -126,16 +117,14 @@ int CAcceptor::create_and_bind(std::string const& port)
 bool CAcceptor::make_socket_nonblocking(int socketfd)
 {
 	int flags = fcntl(socketfd, F_GETFL, 0);
-	if (flags == -1)
-	{
+	if (flags == -1) {
 		std::cerr << "fcntl failed(F_GETFL) errno : " << errno << "errstring: " << strerror_tl(errno) << std::endl;
 		return false;
 	}
 
 	flags |= O_NONBLOCK;
 	int s = fcntl(socketfd, F_SETFL, flags);
-	if (s == -1)
-	{
+	if (s == -1) {
 		std::cerr << "fcntl failed(F_SETFL) errno : " << errno << "errstring: " << strerror_tl(errno) << std::endl;
 		return false;
 	}

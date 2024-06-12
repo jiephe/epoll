@@ -3,6 +3,8 @@
 #include <iostream>
 #include <sys/epoll.h>
 
+//#define TEST_EPOLL_ET
+
 Channel::Channel(CLoop* loop, int fd)
 	: loop_(loop), fd_(fd)
 	, revents_(0)
@@ -11,6 +13,9 @@ Channel::Channel(CLoop* loop, int fd)
 void Channel::start()
 {
 	revents_ |= (EPOLLIN | EPOLLPRI);
+#ifdef TEST_EPOLL_ET
+	revents_ |= EPOLLET;
+#endif
 	loop_->add_event(fd_, this);
 }
 
@@ -42,24 +47,28 @@ void Channel::removeAllEvent()
 void Channel::handle_read()
 {	
 	//std::cout << "fd: " << fd_ << " handle_read" << std::endl;
-	if (read_cb_)
+	if (read_cb_) {
 		read_cb_();
+	}
 }
 	
 void Channel::handle_write()
 {
-	if (write_cb_)
+	if (write_cb_) {
 		write_cb_();
+	}
 }
 	
 void Channel::handle_close()
 {
-	if (close_cb_)
+	if (close_cb_) {
 		close_cb_();
+	}
 }
 
 void Channel::handle_error()
 {
-	if (error_cb_)
+	if (error_cb_) {
 		error_cb_();
+	}
 }

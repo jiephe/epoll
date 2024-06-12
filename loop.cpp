@@ -10,8 +10,6 @@
 
 CLoop::CLoop()
 {
-	//为了保证loops_在主线程里操作 同时每个loop的epollfd_/wakeupFd_由属于的线程create
-	//不在loop的构造函数里做任何操作
 }
 
 CLoop::~CLoop()
@@ -25,37 +23,41 @@ void CLoop::add_event(int fd, Channel* channel)
 	struct epoll_event ev;
 	ev.data.ptr = channel;
 	ev.events = channel->get_events();
-	if (epoll_ctl(epollfd_, EPOLL_CTL_ADD, fd, &ev) < 0)
+	if (epoll_ctl(epollfd_, EPOLL_CTL_ADD, fd, &ev) < 0) {
 		std::cerr << "epoll_ctl add errno : " << errno << "errstring: " << strerror_tl(errno) << std::endl;
+	}
 }
 void CLoop::delete_event(int fd, Channel* channel)
 {
 	struct epoll_event ev;
 	ev.data.ptr = channel;
 	ev.events = channel->get_events();
-	if (epoll_ctl(epollfd_, EPOLL_CTL_DEL, fd, &ev) < 0)
+	if (epoll_ctl(epollfd_, EPOLL_CTL_DEL, fd, &ev) < 0) {
 		std::cerr << "epoll_ctl del errno : " << errno << "errstring: " << strerror_tl(errno) << std::endl;
+	}
 }
 void CLoop::modify_event(int fd, Channel* channel)
 {
 	struct epoll_event ev;
 	ev.data.ptr = channel;
 	ev.events = channel->get_events();
-	if (epoll_ctl(epollfd_, EPOLL_CTL_MOD, fd, &ev) < 0)
+	if (epoll_ctl(epollfd_, EPOLL_CTL_MOD, fd, &ev) < 0) {
 		std::cerr << "epoll_ctl mod errno : " << errno << "errstring: " << strerror_tl(errno) << std::endl;
+	}
 }
 
 bool CLoop::is_self_loop()
 {
-	return (current_thead_id_ == std::this_thread::get_id());
+	return (current_thead_id_ == getCurrentThreadId());
 }
 
 void CLoop::runInLoop(Functor cb)
 {
-	if (is_self_loop())
+	if (is_self_loop()) {
 		cb();
-	else
+	} else {
 		queueInLoop(std::move(cb));
+	}
 }
 
 void CLoop::queueInLoop(Functor cb)
@@ -65,37 +67,40 @@ void CLoop::queueInLoop(Functor cb)
 		pendingFunctors_.emplace_back(std::move(cb));
 	}
 
-	if (!is_self_loop() || callingPendingFunctors_)
+	if (!is_self_loop() || callingPendingFunctors_) {
 		wakeup();
+	}
 }
 
 void CLoop::wakeup()
 {
 	uint64_t one = 1;
 	ssize_t n = write(wakeupFd_, &one, sizeof one);
-	if (n != sizeof one)
+	if (n != sizeof one) {
 		std::cout << "EventLoop::wakeup() writes " << n << " bytes instead of 8" << std::endl;	
+	}
 }
 
 void CLoop::OnWakeRead()
 {
 	uint64_t one = 1;
 	ssize_t n = read(wakeupFd_, &one, sizeof one);
-	if (n != sizeof one)
+	if (n != sizeof one) {
 		std::cout << "EventLoop::handleRead() reads " << n << " bytes instead of 8 << std::endl;";
+	}
 }
 	
 void CLoop::init()
 {
 	epollfd_ = epoll_create1(EPOLL_CLOEXEC);
-	if (epollfd_ == -1)
+	if (epollfd_ == -1) {
 		std::cerr << "epoll_create1 failed errno : " << errno << "errstring: " << strerror_tl(errno) << std::endl;
-	
+	}
+
 	events_.resize(16);
 	
 	wakeupFd_ = eventfd(0, EFD_NONBLOCK | EFD_CLOEXEC);
-	if (wakeupFd_ < 0)
-	{
+	if (wakeupFd_ < 0) {
 		std::cerr << "Failed in eventfd errno : " << errno << "errstring: " << strerror_tl(errno) << std::endl;
 		abort();
 	}
@@ -104,7 +109,7 @@ void CLoop::init()
 	wake_channel_->set_read_cb(std::bind(&CLoop::OnWakeRead, this));
 	wake_channel_->start();
 	
-	current_thead_id_ = std::this_thread::get_id();
+	current_thead_id_ = getCurrentThreadId();
 	
 	run_ = true;
 	
@@ -113,40 +118,38 @@ void CLoop::init()
 
 void CLoop::start()
 {
-	while (run_)
-	{
+	while (run_) {
 		auto nevent = epoll_wait(epollfd_, &events_[0], events_.size(), -1);
-		if (nevent < 0)
-		{
+		if (nevent < 0) {
 			if (errno == EINTR)
 				continue;
 			std::cout << "errno: " << errno << std::endl;
 			break;
-		}
-		else if (nevent > 0)
-		{
-			if ((size_t)nevent == events_.size())
+		} else if (nevent > 0) {
+			if ((size_t)nevent == events_.size()) {
 				events_.resize(nevent * 2);
-			
-			for (int i = 0; i < nevent; ++i)
-			{
+			}
+
+			for (int i = 0; i < nevent; ++i) {
 				Channel* channel = static_cast<Channel*>(events_[i].data.ptr);
-				if (events_[i].events & EPOLLHUP && !(events_[i].events & EPOLLIN))
+				if (events_[i].events & EPOLLHUP && !(events_[i].events & EPOLLIN)) {
 					channel->handle_close();
-				
-				if (events_[i].events & EPOLLERR)
+				}
+
+				if (events_[i].events & EPOLLERR) {
 					channel->handle_error();
-				
-				if (events_[i].events & (EPOLLIN | EPOLLPRI | EPOLLRDHUP))
-				{
+				}
+
+				if (events_[i].events & (EPOLLIN | EPOLLPRI | EPOLLRDHUP)) {
 					//std::cout << "read thread: " << current_thead_id_ << std::endl;
 					channel->handle_read();
 				}
 					
-				if (events_[i].events & EPOLLOUT)
+				if (events_[i].events & EPOLLOUT) {
 					channel->handle_write();
+				}
 			}
-			
+
 			doPendingFunctors();
 		}
 	}
@@ -162,7 +165,9 @@ void CLoop::doPendingFunctors()
 		functors.swap(pendingFunctors_);
 	}
 
-	for (const Functor& functor : functors)
+	for (const Functor& functor : functors) {
 		functor();
+	}
+
 	callingPendingFunctors_ = false;
 }

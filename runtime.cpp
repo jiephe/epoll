@@ -4,6 +4,7 @@
 #include "connection.h"
 #include "tcp_server.h"
 #include <iostream>
+#include "common.h"
 
 CRuntime::CRuntime()
 {}
@@ -13,20 +14,20 @@ CRuntime::~CRuntime()
 
 void CRuntime::onConnection(const connectionPtr& conn)
 {
-	//std::cout << "new connection: " << conn.get() << std::endl;	
+	std::cout << "new connection: " << conn.get() << std::endl;	
 }
 
 void CRuntime::onWriteComplete(const connectionPtr& conn)
 {
-	std::cout << "thread: " << std::this_thread::get_id() << " conn: " << conn.get() << " write complete " << std::endl;	
+	std::cout << "thread: " << getCurrentThreadId() << " conn: " << conn.get() << " write complete " << std::endl;	
 }
 
 void CRuntime::onMessage(const connectionPtr& conn, void* data, int len)
 {
-	std::cout << "thread: " << std::this_thread::get_id() << " conn: " << conn.get() << " len: " << len << std::endl;	
+	std::cout << "thread: " << getCurrentThreadId() << " conn: " << conn.get() << " len: " << len << std::endl;	
 	conn->set_write_complete_callback(std::bind(&CRuntime::onWriteComplete, this, std::placeholders::_1));
 	
-	std::vector<char> send_data(10240 * 100, 'a');
+	std::vector<char> send_data(10, 'a');
 	conn->send(&send_data[0], send_data.size());
 }
 

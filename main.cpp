@@ -3,5 +3,5 @@
 int main()
 {
 	CRuntime rt;
-	rt.start(3, "22001");
+	rt.start(4, "12358");
 }

@@ -14,20 +14,3 @@
 *.o
 *.db
 *.log
-
-*ipch/
-*VisualGDB/
-*.tlog/
-*Debug/
-*Release/
-*/packages/
-*.vs/
-*build/
-.ycm*
-*LIB Debug*/
-*Win32/
-*x64/
-*bin/
-*temp/
-
-*.pyc

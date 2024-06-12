@@ -19,6 +19,7 @@ CTcpServer::~CTcpServer()
 
 void CTcpServer::OnData(const connectionPtr& conn, void* data, int len)
 {
+	std::cout << "OnData fd: " << conn->get_fd() << std::endl;
 	msg_cb_(conn, data, len);
 }
 
@@ -32,8 +33,6 @@ void CTcpServer::removeConnection(const connectionPtr& conn)
 
 void CTcpServer::OnClose(const connectionPtr& conn)
 {
-	//connections_属于base_loop_ 所以删除时要回到base_loop_处理
-	//但如果是多线程 每个conn里的fd_是分别一个loop的 所以fd_回到自己的loop关闭	
 	//std::cout << "OnClose fd: " << conn->get_fd() << std::endl;
 	loop_->runInLoop(std::bind(&CTcpServer::removeConnection, this, conn));
 }
