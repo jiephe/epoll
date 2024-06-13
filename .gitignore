@@ -14,3 +14,5 @@
 *.o
 *.db
 *.log
+build
+build/*.*
