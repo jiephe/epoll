@@ -14,10 +14,6 @@ public:
 	void set_new_connection_cb(const NewConnectionCallback& cb) { connection_cb_ = cb; }
 	
 	void accept_connection();
-	
-	int create_and_bind(const std::string& port);
-	
-	bool make_socket_nonblocking(int socketfd);
 			
 private:
 	CLoop*					loop_;

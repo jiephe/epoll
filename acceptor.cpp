@@ -21,12 +21,24 @@ CAcceptor::~CAcceptor()
 
 bool CAcceptor::start()
 {
-	fd_ = create_and_bind(port_);
-	if (fd_ == -1)
-		return false;
+	fd_ = ::socket(AF_INET, SOCK_STREAM | SOCK_NONBLOCK | SOCK_CLOEXEC, IPPROTO_TCP);
 
-	if (!make_socket_nonblocking(fd_))
-		return false;
+	int flag = 1;
+	::setsockopt(fd_, SOL_SOCKET, SO_REUSEADDR, &flag, sizeof(int));
+
+	flag = 1;
+	::setsockopt(fd_, SOL_SOCKET, SO_REUSEPORT, &flag, sizeof(int));
+
+	struct sockaddr_in servaddr;
+    std::memset(&servaddr, 0, sizeof(servaddr));
+    servaddr.sin_family = AF_INET;
+    servaddr.sin_addr.s_addr = INADDR_ANY;
+    servaddr.sin_port = htons(std::stoi(port_));
+    if (::bind(fd_, (struct sockaddr*)&servaddr, sizeof(servaddr)) < 0) {
+        std::cerr << "Error binding socket" << std::endl;
+        close(fd_);
+        return false;
+    }
 
 	if (listen(fd_, SOMAXCONN) == -1) {
 		std::cerr << "listen failed errno : " << errno << "errstring: " << strerror_tl(errno) << std::endl;
@@ -64,72 +76,6 @@ void CAcceptor::accept_connection()
 		NI_NUMERICHOST | NI_NUMERICSERV) == 0) {
 		//std::cout << "[I] Accepted connection on descriptor " << infd << "(host=" << hbuf << ", port=" << sbuf << ")" << "\n";
 	}
-
-	if (!make_socket_nonblocking(infd)) {
-		std::cerr <<"make_socket_nonblocking failed" << std::endl;
-		return;
-	}
 	
 	connection_cb_(infd);
-}
-	
-int CAcceptor::create_and_bind(std::string const& port)
-{
-	struct addrinfo hints;
-
-	memset(&hints, 0, sizeof(struct addrinfo));
-	hints.ai_family = AF_UNSPEC; /* Return IPv4 and IPv6 choices */
-	hints.ai_socktype = SOCK_STREAM; /* TCP */
-	hints.ai_flags = AI_PASSIVE; /* All interfaces */
-
-	struct addrinfo* result;
-	int sockt = getaddrinfo(nullptr, port.c_str(), &hints, &result);
-	if (sockt != 0) {
-		std::cerr << "getaddrinfo failed errno : " << errno << "errstring: " << strerror_tl(errno) << std::endl;
-		return -1;
-	}
-
-	struct addrinfo* rp;
-	int socketfd;
-	for (rp = result; rp != nullptr; rp = rp->ai_next) {
-		socketfd = socket(rp->ai_family, rp->ai_socktype, rp->ai_protocol);
-		if (socketfd == -1)
-			continue;
-
-		sockt = bind(socketfd, rp->ai_addr, rp->ai_addrlen);
-		if (sockt == 0)
-			break;
-		else if (sockt < 0)
-			std::cerr << "bind failed errno : " << errno << "errstring: " << strerror_tl(errno) << std::endl;
-			
-		close(socketfd);
-	}
-
-	if (rp == nullptr) {
-		std::cerr << "bind failed" << std::endl;
-		return -1;
-	}
-
-	freeaddrinfo(result);
-	return socketfd;
-}
-
-bool CAcceptor::make_socket_nonblocking(int socketfd)
-{
-	int flags = fcntl(socketfd, F_GETFL, 0);
-	if (flags == -1) {
-		std::cerr << "fcntl failed(F_GETFL) errno : " << errno << "errstring: " << strerror_tl(errno) << std::endl;
-		return false;
-	}
-
-	flags |= O_NONBLOCK;
-	int s = fcntl(socketfd, F_SETFL, flags);
-	if (s == -1) {
-		std::cerr << "fcntl failed(F_SETFL) errno : " << errno << "errstring: " << strerror_tl(errno) << std::endl;
-		return false;
-	}
-	
-	int flag = 1;
-	setsockopt(socketfd, SOL_SOCKET, SO_REUSEADDR, &flag, sizeof(int));
-	return true;
 }
